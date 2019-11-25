@@ -315,7 +315,6 @@ void draw(int row)
         printf("\t%2d# ", row_index++);
         for (int j = 0; j < map.width; ++j)
             printf("  ");
-            // printf("%s ", get(map.life, i, j) ? SYM : " ");
         printf("#\n");
     }
     /* lower border */      
