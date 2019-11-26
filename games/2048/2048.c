@@ -47,6 +47,10 @@ int main()
     GetConsoleScreenBufferInfo(handle, &info);
     default_background = info.wAttributes & 0xf0;
     default_color = info.wAttributes & 0xf;
+    CONSOLE_CURSOR_INFO show_cursor;
+    GetConsoleCursorInfo(handle, &show_cursor);
+    CONSOLE_CURSOR_INFO hide_cursor = {.bVisible = false, .dwSize = 1};
+    SetConsoleCursorInfo(handle, &hide_cursor);
     while (status != EXIT)
     {
         switch (status)
@@ -69,9 +73,19 @@ int main()
     printf("\n\n\tAuthor: Yihao Wang, 26/11/2019\n");
     Sleep(2000);
     system("cls");
+    SetConsoleCursorInfo(handle, &show_cursor);
 }
 void new()
 {
+    static char header[] = 
+        "\n\n"
+        "\t\tGame 2048\n\n\n"
+        "\tMerge the squares to reach 2048\n\t (or as high as you can reach)\n"
+        "\tUse arrow keys, or 'awsd',\n\t or vim-style 'jhkl' to control\n\n"
+        "\tPress 'q' to exit \n\tPress 'n' to start a new game\n\n"
+        "\t";
+    system("cls");
+    printf("%s", header);
     for (int r = 0; r < 4; ++r)
         for (int c = 0; c < 4; ++c)
             map[r][c] = 0;
@@ -85,6 +99,7 @@ void move()
 {
     enum dir dir;
     bool key_got = false;
+    
     while (!key_got)
     {
         key_got = true;
@@ -295,15 +310,8 @@ bool test_cols()
 void show()
 {
     int cur;
-    system("cls");
-    static char info[] = 
-        "\n\n"
-        "\t\tGame 2048\n\n\n"
-        "\tMerge the squares to reach 2048\n\t (or as high as you can reach)\n"
-        "\tUse arrow keys, or 'awsd',\n\t or vim-style 'jhkl' to control\n\n"
-        "\tPress 'q' to exit \n\tPress 'n' to start a new game\n\n"
-        "\t";
-    printf("%s", info);
+    COORD coord = {8, 13};
+    SetConsoleCursorPosition(handle, coord);
     for (int r = 0; r < 4; ++r)
     {
         for (int c = 0; c < 4; ++c)
