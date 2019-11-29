@@ -5,27 +5,28 @@
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
+HANDLE  handle;
+int     default_background;
+int     default_color;
+int background[] = {
+//     0     2     4     8    16    32    64   128   256   512  1024  2048  4096  8192 16384 32768 65536
+    0x70, 0x70, 0xf0, 0x60, 0xe0, 0x20, 0xa0, 0x10, 0x90, 0x30, 0xb0, 0x40, 0xc0, 0x50, 0xd0, 0x80, 0x00
+};
+int color[] = {
+    0x08, 0x00, 0x00, 0x00, 0x00, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07
+};
 #define SET_TO_DEFAULT SetConsoleTextAttribute(handle, default_background | default_color)
-#define SET_COLOR(i) SetConsoleTextAttribute(handle, background[(i)] | color[(i)])
+#define SET_COLOR(i)   SetConsoleTextAttribute(handle, background[(i)] | color[(i)])
+int map[4][4];
+unsigned long score;
+int empty = 16;
+char *winning_message;
 enum status {
     NEW,
     MOVE,
     END,
     EXIT
 } status = NEW;
-int map[4][4];
-unsigned long score;
-int empty = 16;
-int default_background;
-int default_color;
-HANDLE handle;
-int background[] = {
-//     0     2     4     8    16    32    64   128   256   512  1024  2048  4096  8192 16384 32768 65536
-    0x70, 0x70, 0xf0, 0x60, 0xe0, 0x20, 0xa0, 0x30, 0xb0, 0x10, 0x90, 0x40, 0xc0, 0x50, 0xd0, 0x80, 0x00
-};
-int color[] = {
-    0x08, 0x00, 0x00, 0x00, 0x00, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07
-};
 enum dir {
     UP,
     DOWN,
@@ -36,7 +37,6 @@ void new();
 void move();
 bool compute(enum dir);
 void show();
-void win();
 void end();
 bool test_cols();
 bool test_rows();
@@ -77,7 +77,7 @@ int main()
 }
 void new()
 {
-    static char header[] = 
+    static char info[] = 
         "\n\n"
         "\t\tGame 2048\n\n\n"
         "\tMerge the squares to reach 2048\n\t (or as high as you can reach)\n"
@@ -85,13 +85,23 @@ void new()
         "\tPress 'q' to exit \n\tPress 'n' to start a new game\n\n"
         "\t";
     system("cls");
-    printf("%s", header);
+    printf("%s", info);
     for (int r = 0; r < 4; ++r)
         for (int c = 0; c < 4; ++c)
             map[r][c] = 0;
     score = 0;
     empty = 16;
-    compute(UP);
+    winning_message = "";
+    srand((unsigned)time(NULL));
+    int new_block = 1;
+    if (rand() % 10 == 0)
+        new_block = 2;
+    int n = rand() % empty + 1, i = 0;
+    for (; i < 16; ++i)
+        if (map[i / 4][i % 4] == 0 && --n == 0)
+            break;
+    map[i / 4][i % 4] = new_block;
+    --empty; 
     show();
     status = MOVE;
 }
@@ -99,7 +109,6 @@ void move()
 {
     enum dir dir;
     bool key_got = false;
-    
     while (!key_got)
     {
         key_got = true;
@@ -135,6 +144,8 @@ void move()
 }
 bool compute(enum dir dir)
 {
+    bool moved = false;    
+    static char message[] = "\tYou have achieved 2048!\n";
     switch (dir)
     {
         case UP:
@@ -147,19 +158,24 @@ bool compute(enum dir dir)
                     {
                         map[cur][c] = map[r][c];
                         map[r][c] = 0;
+                        moved = true;
                     }
                     else if (map[r][c] == map[cur][c])
                     {
                         ++map[cur][c];
+                        if (map[cur][c] > 10)
+                            winning_message = message;
                         score += 1UL << map[cur][c];
                         ++cur;
                         map[r][c] = 0;
                         ++empty;
+                        moved = true;
                     }
                     else if (map[r][c] != 0 && r - cur > 1)
                     {
                         map[++cur][c] = map[r][c];
                         map[r][c] = 0;
+                        moved = true;
                     }
                     else if (map[r][c] != 0 && r - cur <= 1)
                     {
@@ -178,19 +194,24 @@ bool compute(enum dir dir)
                     {
                         map[cur][c] = map[r][c];
                         map[r][c] = 0;
+                        moved = true;
                     }
                     else if (map[r][c] == map[cur][c])
                     {
                         ++map[cur][c];
+                        if (map[cur][c] > 10)
+                            winning_message = message;
                         score += 1UL << map[cur][c];
                         --cur;
                         map[r][c] = 0;
                         ++empty;
+                        moved = true;
                     }
                     else if (map[r][c] != 0 && cur - r > 1)
                     {
                         map[--cur][c] = map[r][c];
                         map[r][c] = 0;
+                        moved = true;
                     }
                     else if (map[r][c] != 0 && cur - r <= 1)
                     {
@@ -209,19 +230,24 @@ bool compute(enum dir dir)
                     {
                         map[r][cur] = map[r][c];
                         map[r][c] = 0;
+                        moved = true;
                     }
                     else if (map[r][c] == map[r][cur])
                     {
                         ++map[r][cur];
+                        if (map[cur][c] > 10)
+                            winning_message = message;
                         score += 1UL << map[r][cur];
                         ++cur;
                         map[r][c] = 0;
                         ++empty;
+                        moved = true;
                     }
                     else if (map[r][c] != 0 && c - cur > 1)
                     {
                         map[r][++cur] = map[r][c];
                         map[r][c] = 0;
+                        moved = true;
                     }
                     else if (map[r][c] != 0 && c - cur <= 1)
                     {
@@ -240,19 +266,24 @@ bool compute(enum dir dir)
                     {
                         map[r][cur] = map[r][c];
                         map[r][c] = 0;
+                        moved = true;
                     }
                     else if (map[r][c] == map[r][cur])
                     {
                         ++map[r][cur];
+                        if (map[cur][c] > 10)
+                            winning_message = message;
                         score += 1UL << map[r][cur];
                         --cur;
                         map[r][c] = 0;
                         ++empty;
+                        moved = true;
                     }
                     else if (map[r][c] != 0 && cur - c > 1)
                     {
                         map[r][--cur] = map[r][c];
                         map[r][c] = 0;
+                        moved = true;
                     }
                     else if (map[r][c] != 0 && cur - c <= 1)
                     {
@@ -264,7 +295,7 @@ bool compute(enum dir dir)
         default:
             break;
     }
-    if (empty > 0)
+    if (moved)
     {
         srand((unsigned)time(NULL));
         int new_block = 1;
@@ -283,10 +314,10 @@ bool compute(enum dir dir)
 }
 bool test_rows()
 {
-    int c = 0, r = 0;
-    for (; r < 4; ++r)
+    int r, c;
+    for (r = 0; r < 4; ++r)
     {
-        for (; c < 3; ++c)
+        for (c = 0; c < 3; ++c)
             if (map[r][c] == map[r][c + 1] || map[r][c] == 0)
                 return true;
         if (map[r][c] == 0)
@@ -296,10 +327,10 @@ bool test_rows()
 }
 bool test_cols()
 {
-    int c = 0, r = 0;
-    for (; c < 4; ++c)
+    int r, c;
+    for (c = 0; c < 4; ++c)
     {
-        for (; r < 3; ++r)
+        for (r = 0 ; r < 3; ++r)
             if (map[r][c] == map[r + 1][c] || map[r][c] == 0)
                 return true;
         if (map[r][c] == 0)
@@ -345,6 +376,7 @@ void show()
     }
     SET_TO_DEFAULT;
     printf("\n\tScore:\t%lu\n", score);
+    printf("%s", winning_message);
 }
 void end()
 {
