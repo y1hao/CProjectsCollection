@@ -5,6 +5,8 @@ struct regex {
     struct regex *next;
     char *content;
     struct regex *or;
+    struct regex *prefix;
+    struct regex *suffix;
     bool compulsory;
     bool multi;
     bool greedy;
