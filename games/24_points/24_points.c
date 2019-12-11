@@ -6,9 +6,8 @@
 #include "eval.h"
 #define BUFSIZE 1000
 #define CRIT 1.0/10000
+#define MIN 1
 #define MAX 50
-#define MIN 0
-static int range[5] = {10, 20, 30, 40, 50};
 static char info[] = 
 "\n"
 "**** 24 Points ****\n"
@@ -78,9 +77,9 @@ void exploration()
         }
         clear();
         if (!solve(a, b, c, d, buf, sizeof buf))
-            printf("No possible solutions\n");
+            printf("\nNo possible solutions\n");
         else
-            printf("%s\n", buf);
+            printf("\nSolutions are (only 10 of them are displayed if there are too many):\n%s\n", buf);
         char q;
         printf("Enter 'q' to quit game, or any other key to continue:\n");
         if (scanf_s("%c", &q, sizeof q) == 1 && q == 'q')
@@ -94,24 +93,23 @@ void challenge()
     printf("%s\n", challenge_info);
     while (true)
     {
-        printf("Please choose a level from 1 - 5 where 1 = easiest and 5 = hardest:\n");
-        int level;
-        while (scanf_s("%d", &level, sizeof level) != 1 || level < 1 || level > 5)
+        printf("Please choose the upper limit of number (at most %d)\n", MAX);
+        int max;
+        while (scanf_s("%d", &max, sizeof max) != 1 || max < MIN || max > MAX)
         {
             printf("Invalid input, try again!\n");
             clear();
         }
         clear();
-        int max = range[level - 1];
         char buf[BUFSIZE];
         int a, b, c, d;
         do
         {
             srand((unsigned)time((time_t *)NULL));
-            a = rand() % max;
-            b = rand() % max;
-            c = rand() % max;
-            d = rand() % max;
+            a = rand() % max + 1;
+            b = rand() % max + 1;
+            c = rand() % max + 1;
+            d = rand() % max + 1;
         } while (!solve(a, b, c, d, buf, sizeof buf));
         printf("Make 24 using the following numbers\n");
         printf("a = %d\tb = %d\tc = %d\td = %d\n", a, b, c, d);
@@ -130,33 +128,33 @@ void challenge()
             if ((answer < 24 ? 24 - answer : answer - 24) < CRIT)
             {
                 printf("Yes! Congratulations!\n");
-                printf("\tEnter 'n' to see solutions and start a new round,"
-                    "\n\tor any other key to see solutions and end game\n");
+                printf("Enter 'n' to see solutions and start a new round,"
+                    "\nor any other key to see solutions and end game\n");
                 char cond;
                 if (scanf_s("%c", &cond, sizeof cond) == 1 && cond == 'n')
                 {
-                    printf("%s\n", buf);
+                    printf("\nSolutions are (only 10 of them are displayed if there are too many):\n%s\n", buf);
                     clear();
                     break;
                 }
                 else
                 {
-                    printf("%s\n", buf);
+                    printf("\nSolutions are (only 10 of them are displayed if there are too many):\n%s\n", buf);
                     return;
                 }
             }
             else
             {
                 printf("Sorry, wrong answer\n");
-                printf("\tEnter 'n' to see solutions and start a new round"
-                    "\n\tor 'q' to see solutions and quit"
-                    "\n\tor any other key to try again\n");
+                printf("Enter 'n' to see solutions and start a new round"
+                    "\nor 'q' to see solutions and quit"
+                    "\nor any other key to try again\n");
                 char cond;
                 if (scanf_s("%c", &cond, sizeof cond) != 1 || (cond != 'n' && cond != 'q'))
                     clear();
                 else
                 {
-                    printf("%s\n", buf);
+                    printf("\nSolutions are (only 10 of them are displayed if there are too many):\n%s\n", buf);
                     if (cond == 'q')
                         return;
                     clear();
