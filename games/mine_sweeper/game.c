@@ -10,12 +10,14 @@ void move(int *cur_r, int *cur_c, int next_r, int next_c)
     hide_position(*cur_r, *cur_c);
     *cur_r = next_r;
     *cur_c = next_c;
-    show_position(next_r, next_c, map_digged(next_r, next_c));
+    show_position(next_r, next_c);
 }
-bool dig(int r, int c)
+bool dig(int r, int c, int *left)
 {
     if (r < 0 || r >= ROW || c < 0 || c >= COL)
-        return false;
+        return true;
+    if (map_flagged(r, c))
+        return true;
     int content = map_get(r, c);
     if (content == -1)
         return false;
@@ -30,16 +32,23 @@ bool dig(int r, int c)
         dig(r + 1, c);
         dig(r + 1, c + 1);
     }
-    show_content(r, c, content);
+    show_content(r, c);
     map_dig(r, c);
+    ++*left;
+    show_position(r, c);
     return true;
 }
-void flag(int r, int c)
+void flag(int r, int c, int *flagged)
 {
     if (map_digged(r, c))
         return;
     map_flag(r, c);
-    show_flag(r, c, map_flagged(r, c));
+    if (map_flagged(r, c))
+        ++*flagged;
+    else
+        --*flagged;
+    show_flag(r, c);
+    show_position(r, c);
 }
 int get_total()
 {
@@ -78,10 +87,10 @@ bool play()
         switch (c)
         {
             case 'f':
-                flag(row, col);
+                flag(row, col, &flagged);
                 break;
             case 'd':
-                if (!dig(row, col))
+                if (!dig(row, col, *left))
                     return fail();
                 break;
             case 37:
