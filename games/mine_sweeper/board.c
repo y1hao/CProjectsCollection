@@ -4,6 +4,7 @@
 #include "map.h"
 #define getcol(c) (((c)+2)*10)
 #define getrow(r) ((r)+12)
+static CONSOLE_CURSOR_INFO default_info;
 static char frame[] =
 /*  0 */ "        \n"
 /*  1 */ "        \n"
@@ -48,11 +49,17 @@ void show_s(char *s, int len, int col, int row, unsigned color)
 }
 void hide_cursor()
 {
-
+    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    GetConsoleCursorInfo(handle, &default_info);
+    CONSOLE_CURSOR_INFO info;
+    info.dwSize = 100;
+    info.bVisible = false;
+    SetConsoleCursorInfo(handle, &info);
 }
 void show_cursor()
 {
-
+    HANDLE hand = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleCursorInfo(handle, &default_info);
 }
 void show_frame()
 {
