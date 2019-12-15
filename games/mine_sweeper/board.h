@@ -11,5 +11,4 @@ extern void show_info(char *, char *, char *);
 extern void show_position(int, int);
 extern void hide_position(int, int);
 extern void show_content(int, int);
-extern void show_flag(int, int);
 #endif

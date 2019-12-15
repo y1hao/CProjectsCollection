@@ -1,6 +1,6 @@
 #ifndef MINE_SWEEPER_MAP_H
 #define MINE_SWEEPER_MAP_H
-#define ROW 10
+#define ROW 16
 #define COL 30
 extern void map_init(int);
 extern int map_get(int, int);

@@ -7,16 +7,17 @@
 #include "map.h"
 #define getcol(c) ((c)*2+10)
 #define getrow(r) ((r)+12)
-#define TOTAL_R 24
+#define TOTAL_R 30
 #define TOTAL_C 20
-#define FLAGGED_R 25
+#define FLAGGED_R 31
 #define FLAGGED_C 20
 #define BOARD_R 12
 #define BOARD_C 9
 #define S_C (BOARD_C+8)
-#define S1_R (BOARD_R+2)
-#define S2_R (BOARD_R+4)
-#define S3_R (BOARD_R+6)
+#define S1_R (BOARD_R+4)
+#define S2_R (BOARD_R+7)
+#define S3_R (BOARD_R+10)
+#define END_R 31
 static CONSOLE_CURSOR_INFO default_info;
 static char frame[] =
 /*  0 */ "        \n"
@@ -34,22 +35,28 @@ static char frame[] =
 /*        012345678901234567890123456789012345678901234567890123456789012345678 */
 /*                  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 */
 /* 11 */ "        ###############################################################\n"
-/* 12 */ "        #                                                             #\n"  /* 0 */
-/* 13 */ "        #                                                             #\n"  /* 1 */
-/* 14 */ "        #                                                             #\n"  /* 2 */
-/* 15 */ "        #                                                             #\n"  /* 3 */
-/* 16 */ "        #                                                             #\n"  /* 4 */
-/* 17 */ "        #                                                             #\n"  /* 5 */
-/* 18 */ "        #                                                             #\n"  /* 6 */
-/* 19 */ "        #                                                             #\n"  /* 7 */
-/* 20 */ "        #                                                             #\n"  /* 8 */
-/* 21 */ "        #                                                             #\n"  /* 9 */
-/* 22 */ "        ###############################################################\n"
-/* 23 */ "        \n"
+/* 12 */ "        #                                                             #\n"  /*  0 */
+/* 13 */ "        #                                                             #\n"  /*  1 */
+/* 14 */ "        #                                                             #\n"  /*  2 */
+/* 15 */ "        #                                                             #\n"  /*  3 */
+/* 16 */ "        #                                                             #\n"  /*  4 */
+/* 17 */ "        #                                                             #\n"  /*  5 */
+/* 18 */ "        #                                                             #\n"  /*  6 */
+/* 19 */ "        #                                                             #\n"  /*  7 */
+/* 20 */ "        #                                                             #\n"  /*  8 */
+/* 21 */ "        #                                                             #\n"  /*  9 */
+/* 22 */ "        #                                                             #\n"  /* 10 */
+/* 23 */ "        #                                                             #\n"  /* 11 */
+/* 24 */ "        #                                                             #\n"  /* 12 */
+/* 25 */ "        #                                                             #\n"  /* 13 */
+/* 26 */ "        #                                                             #\n"  /* 14 */
+/* 27 */ "        #                                                             #\n"  /* 15 */
+/* 28 */ "        ###############################################################\n"
+/* 29 */ "        \n"
 /*                  11111111112 */
 /*        012345678901234567890 */
-/* 24 */ "        Total:\n"
-/* 25 */ "        Flagged:\n"
+/* 30 */ "        Total:\n"
+/* 31 */ "        Flagged:\n"
 ;
 inline
 void show_c(int c, int col, int row, WORD color)
@@ -120,11 +127,16 @@ void show_map(int c)
 }
 void show_fail()
 {
-    clear_map();
     for (int r = 0; r < ROW; ++r)
         for (int c = 0; c < COL; ++c)
-            if (map_get(r, c) == -1)
-                show_c('*', getcol(c), getrow(r), FOREGROUND_RED);
+        {
+            int content = map_get(r, c);
+            if (map_flagged(r, c))
+                map_flag(r, c);
+            if (!map_digged(r, c))
+                map_dig(r, c);
+            show_content(r, c);
+        }
 }
 void show_info(char *s1, char *s2, char *s3)
 {
@@ -132,6 +144,7 @@ void show_info(char *s1, char *s2, char *s3)
     show_s(s1, S_C, S1_R, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
     show_s(s2, S_C, S2_R, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
     show_s(s3, S_C, S3_R, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+    show_s("", 0, END_R, 0);
 }
 void show_position(int r, int c)
 {
@@ -151,37 +164,44 @@ void hide_position(int r, int c)
 void show_content(int r, int c)
 {
     int content = map_get(r, c);
-    switch (content)
-    {
-        case 1:
-            show_c(content, getcol(c), getrow(r), FOREGROUND_INTENSITY);
-            break;
-        case 2:
-            show_c(content, getcol(c), getrow(r), FOREGROUND_GREEN);
-            break;
-        case 3:
-            show_c(content, getcol(c), getrow(r), FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-            break;
-        case 4:
-            show_c(content, getcol(c), getrow(r), FOREGROUND_BLUE | FOREGROUND_GREEN);
-            break;
-        case 5:
-            show_c(content, getcol(c), getrow(r), FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-            break;
-        case 6:
-            show_c(content, getcol(c), getrow(r), FOREGROUND_RED | FOREGROUND_GREEN);
-            break;
-        case 7:
-            show_c(content, getcol(c), getrow(r), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-            break;
-        case 8:
-            show_c(content, getcol(c), getrow(r), FOREGROUND_RED | FOREGROUND_BLUE);
-            break;
-        default:
-            break;
-    }
-}
-void show_flag(int r, int c)
-{
-    show_c('F', getcol(c), getrow(r), FOREGROUND_RED | FOREGROUND_INTENSITY);
+    if (map_flagged(r, c))
+        show_c('F', getcol(c), getrow(r), FOREGROUND_RED | FOREGROUND_INTENSITY);
+    else if (!map_digged(r, c))
+        show_c('.', getcol(c), getrow(r), FOREGROUND_INTENSITY);
+    else
+        switch (content)
+        {
+            case -1:
+                show_c('*', getcol(c), getrow(r), FOREGROUND_RED);
+                break;
+            case 0:
+                show_c(' ', getcol(c), getrow(r), FOREGROUND_INTENSITY);
+                break;
+            case 1:
+                show_c(content + '0', getcol(c), getrow(r), FOREGROUND_INTENSITY);
+                break;
+            case 2:
+                show_c(content + '0', getcol(c), getrow(r), FOREGROUND_GREEN);
+                break;
+            case 3:
+                show_c(content + '0', getcol(c), getrow(r), FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                break;
+            case 4:
+                show_c(content + '0', getcol(c), getrow(r), FOREGROUND_BLUE | FOREGROUND_GREEN);
+                break;
+            case 5:
+                show_c(content + '0', getcol(c), getrow(r), FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                break;
+            case 6:
+                show_c(content + '0', getcol(c), getrow(r), FOREGROUND_RED | FOREGROUND_GREEN);
+                break;
+            case 7:
+                show_c(content + '0', getcol(c), getrow(r), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                break;
+            case 8:
+                show_c(content + '0', getcol(c), getrow(r), FOREGROUND_RED | FOREGROUND_BLUE);
+                break;
+            default:
+                break;
+        }
 }

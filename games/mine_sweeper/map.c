@@ -29,7 +29,7 @@ void map_init(int n)
         rand_helper[i] = i;
     for (int i = 0; i < n; ++i)
     {
-        int other = rand() % (n - i) + i;
+        int other = rand() % (ROW * COL - i) + i;
         int temp = rand_helper[i];
         rand_helper[i] = rand_helper[other];
         rand_helper[other] = temp;
