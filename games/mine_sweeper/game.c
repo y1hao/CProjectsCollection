@@ -1,6 +1,6 @@
 #include <stdbool.h>
+#include <stdio.h>
 #include <conio.h>
-#include "game.h"
 #include "map.h"
 #include "board.h"
 void move(int *cur_r, int *cur_c, int next_r, int next_c)
@@ -14,23 +14,21 @@ void move(int *cur_r, int *cur_c, int next_r, int next_c)
 }
 bool dig(int r, int c, int *left)
 {
-    if (r < 0 || r >= ROW || c < 0 || c >= COL)
-        return true;
-    if (map_flagged(r, c))
+    if (r < 0 || r >= ROW || c < 0 || c >= COL || map_flagged(r, c))
         return true;
     int content = map_get(r, c);
     if (content == -1)
         return false;
     if (content == 0)
     {
-        dig(r - 1, c);
-        dig(r - 1, c - 1);
-        dig(r - 1, c + 1);
-        dig(r, c - 1);
-        dig(r, c + 1);
-        dig(r + 1, c - 1);
-        dig(r + 1, c);
-        dig(r + 1, c + 1);
+        dig(r - 1, c, left);
+        dig(r - 1, c - 1, left);
+        dig(r - 1, c + 1, left);
+        dig(r, c - 1, left);
+        dig(r, c + 1, left);
+        dig(r + 1, c - 1, left);
+        dig(r + 1, c, left);
+        dig(r + 1, c + 1, left);
     }
     show_content(r, c);
     map_dig(r, c);
@@ -80,6 +78,9 @@ bool play()
     int total = get_total();
     int row = 0, col = 0, flagged = 0, left = COL * ROW;
     map_init(total);
+    clear_map();
+    show_map('.');
+    show_position(row, col);
     show_stats(total, flagged);
     int c;
     while ((c = _getch()) != 'q' && c != 'n')
@@ -90,20 +91,20 @@ bool play()
                 flag(row, col, &flagged);
                 break;
             case 'd':
-                if (!dig(row, col, *left))
+                if (!dig(row, col, &left))
                     return fail();
                 break;
             case 37:
-                move(&cur_r, &cur_c, cur_r - 1, cur_c);
+                move(&row, &col, row - 1, col);
                 break;
             case 38:
-                move(&cur_r, &cur_c, cur_r, cur_c - 1);
+                move(&row, &col, row, col - 1);
                 break;
             case 39:
-                move(&cur_r, &cur_c, cur_r + 1, cur_c);
+                move(&row, &col, row + 1, col);
                 break;
             case 40:
-                move(&cur_r, &cur_c, cur_r, cur_c + 1);
+                move(&row, &col, row, col + 1);
                 break;
             default:
                 break;
@@ -116,9 +117,9 @@ bool play()
 }
 int main()
 {
-    hide_cursor();
+    //hide_cursor();
     while (play())
         ;
     show_info("Thank you for playing!", "Author: Yihao Wang", "14/12/2019");
-    show_cursor();
+    //show_cursor();
 }

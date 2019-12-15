@@ -18,7 +18,11 @@ void map_init(int n)
 {
     for (int r = 0; r < ROW; ++r)
         for (int c = 0; c < COL; ++c)
-            map[r][c] = {0, false, false};
+        {
+            map[r][c].val = 0;
+            map[r][c].digged = false;
+            map[r][c].flagged = false;
+        }
     srand((unsigned)time(NULL));
     int rand_helper[ROW * COL];
     for (int i = 0; i < ROW * COL; ++i)
@@ -33,7 +37,7 @@ void map_init(int n)
     for (int i = 0; i < n; ++i)
     {
         int row = rand_helper[i] / COL;
-        int col = rand_helper[i] / ROW;
+        int col = rand_helper[i] % COL;
         map[row][col].val = -1;
         inc(row - 1, col - 1);
         inc(row - 1, col);
