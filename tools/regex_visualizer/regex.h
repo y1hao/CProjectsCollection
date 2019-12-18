@@ -8,7 +8,4 @@ extern void re_append(regex *, regex *);
 extern void re_or(regex *, regex *);
 extern void re_pre(regex *, regex *);
 extern void re_suf(regex *, regex *);
-extern void re_setmult(regex *);
-extern void re_setcompulsory(regex *);
-extern void re_setnongreedy(regex *);
 #endif
