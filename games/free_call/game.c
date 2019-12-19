@@ -8,20 +8,44 @@ enum status {
     SELECT,
     MOVE,
     QUIT
-} status = INIT;
+};
+void game_init(enum status *status, int *stack, int *count)
+{
+    *status = SELECT;
+    *stack = 0;
+    *count = 0;
+}
+void game_select(enum status *status, int *stack, int *count)
+{
+    while (true)
+    {
+        int c = _getch();
+        switch (c)
+        {
+            case 
+        }
+    }
+}
+void game_move(enum status *status, int *stack, int *count)
+{
 
+}
 int main()
 {
-    int c;
+    enum status status = INIT;
+    int stack, count;
     while (status != QUIT)
     {
         switch (status)
         {
             case INIT:
+                game_init(&status, &stack, &count);
                 break;
             case SELECT:
+                game_select(&status, &stack, &count);
                 break;
             case MOVE:
+                game_move(&status, &stack, &count);
                 break;
             default:
                 break;
