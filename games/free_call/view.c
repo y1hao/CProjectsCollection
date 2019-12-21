@@ -24,3 +24,15 @@ int int_to_key(int n)
         return keys[n];
     return -1;
 }
+void show_info()
+{
+
+}
+void show_win()
+{
+
+}
+void show_stack(int stack)
+{
+
+}

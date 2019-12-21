@@ -18,7 +18,9 @@ void game_init(enum status *status, int *src, int *count, int *dest)
     *src = -1;
     *dest = -1;
     *count = 0;
-    // draw
+    show_info();
+    for (int i = 0; i < 16; ++i)
+        show_stack(i);
 }
 void game_select(enum status *status, int *src, int *count, int *dest)
 {
@@ -44,7 +46,7 @@ void game_select(enum status *status, int *src, int *count, int *dest)
                 ++*count;
             else 
                 *count = 0;
-            // draw
+            show_stack(stack);
             return;
         }
         else
@@ -62,13 +64,14 @@ void game_move(enum status *status, int *src, int *count, int *dest)
         || !deck_is_movable(deck_peek(*dest, 1), deck_peek(*src, *count)))
         return;
     deck_move(*dest, *src, *count);
-    // draw
+    show_stack(*dest);
+    show_stack(*src);
     if (deck_is_winner())
         *status = WIN;
 }
 void game_win()
 {
-    // draw
+    show_win();
     int c = _getch();
     if (c == 'q')
     {
@@ -107,6 +110,6 @@ int main()
         "\n"
         "\n"
         "\tThank you for playing!\n"
-        "\tAuthor: Yihao Wang, 20/12/2019\n"
+        "\tAuthor: Yihao Wang, 22/12/2019\n"
     );
 }
