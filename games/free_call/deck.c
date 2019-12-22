@@ -11,10 +11,22 @@ struct deck_card {
         CLUB
     } suit
 };
-static struct deck_card *deck[16];
+static struct deck {
+    deck_card stack;
+    int ptr;
+} deck[16];
 void deck_init()
 {
-    for (int i = 0; i < )
+    if (*deck == NULL)
+    {
+        for (int i = 0; i < 16; ++i)
+        {
+            deck[i] = malloc(sizeof struct deck * 16);
+            deck[i].ptr = 0;
+            deck[i].stack = malloc(sizeof deck_card * 19);
+        }
+    }
+    int 
 }
 void deck_move(int dest, int src, int num)
 {
@@ -32,7 +44,7 @@ bool deck_is_continuous(int stack, int num)
 {
 
 }
-bool deck_is_movable(struct deck_card dest, struct deck_card src)
+bool deck_is_movable(deck_card dest, deck_card src)
 {
 
 }

@@ -32,7 +32,7 @@ void show_win()
 {
 
 }
-void show_stack(int stack)
+void show_stack(int stack, int src, int count)
 {
 
 }

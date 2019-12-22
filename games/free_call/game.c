@@ -11,6 +11,7 @@ enum status {
     QUIT,
     WIN
 };
+
 void game_init(enum status *status, int *src, int *count, int *dest)
 {
     deck_init();
@@ -20,7 +21,7 @@ void game_init(enum status *status, int *src, int *count, int *dest)
     *count = 0;
     show_info();
     for (int i = 0; i < 16; ++i)
-        show_stack(i);
+        show_stack(i, *src, *count);
 }
 void game_select(enum status *status, int *src, int *count, int *dest)
 {
@@ -46,7 +47,7 @@ void game_select(enum status *status, int *src, int *count, int *dest)
                 ++*count;
             else 
                 *count = 0;
-            show_stack(stack);
+            show_stack(stack, *src, *count);
             return;
         }
         else
@@ -64,8 +65,8 @@ void game_move(enum status *status, int *src, int *count, int *dest)
         || !deck_is_movable(deck_peek(*dest, 1), deck_peek(*src, *count)))
         return;
     deck_move(*dest, *src, *count);
-    show_stack(*dest);
-    show_stack(*src);
+    show_stack(*dest, -1, 0);
+    show_stack(*src, -1, 0);
     if (deck_is_winner())
         *status = WIN;
 }
@@ -74,15 +75,10 @@ void game_win()
     show_win();
     int c = _getch();
     if (c == 'q')
-    {
         *status = QUIT;
-        return;
-    }
-    if (c == 'n')
-    {
+    else if (c == 'n')
         *status = INIT;
-        return;
-    }h
+    return;
 }
 int main()
 {
