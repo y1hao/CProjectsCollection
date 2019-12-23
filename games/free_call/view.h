@@ -4,5 +4,5 @@ extern int  key_to_int(int c);
 extern int  int_to_key(int n);
 extern void show_info();
 extern void show_win();
-extern void show_stack(int stack， int src, int count);
+extern void show_stack(int stack, int src, int count);
 #endif

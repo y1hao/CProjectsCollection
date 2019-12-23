@@ -7,9 +7,9 @@ struct deck_card {
     int val;
     enum {
         HEART,
+        CLUB,
         DIAMOND,
-        SPADE,
-        CLUB
+        SPADE
     } suit
 };
 static struct deck {
@@ -17,27 +17,26 @@ static struct deck {
     int ptr;
 } deck[16];
 
+inline deck_card deck_peek(int n, int num)
+{
+    return deck[n].stack[deck[n].ptr - num];
+}
 void deck_init()
 {
-    if (*deck == NULL)
-    {
-        for (int i = 0; i < 8; ++i)
+    if (deck[0].stack == NULL)
+        for (int i = 0; i < 16; ++i)
         {
-            deck[i] = malloc(sizeof struct deck * 16);
+            int len = i < 8 ? 1 : 19;
             deck[i].ptr = 0;
-            deck[i].stack = malloc(sizeof deck_card);
+            deck[i].stack = malloc(sizeof deck_card * len);
         }
-        for (int i = 6; i < 16; ++i)
-        {
-            deck[i] = malloc(sizeof struct deck * 16);
+    else 
+        for (int i = 0; i < 16; ++i)
             deck[i].ptr = 0;
-            deck[i].stack = malloc(sizeof deck_card * 19);
-        }
-    }
     int shuffle_helper[52];
-    srand((unsigned)time(NULL));
     for (int i = 0; i < 52; ++i)
         shuffle_helper[i] = i;
+    srand((unsigned)time(NULL));    
     for (int i = 0; i < 52; ++i)
     {
         int other = rand() % (52 - i) + i;
@@ -45,9 +44,10 @@ void deck_init()
         shuffle_helper[other] = i
     }
     int shuffle_ptr = 0;
-    for (int i = 8; i < 12; ++i)
+    for (int i = 8; i < 16; ++i)
     {
-        for (int j = 0; j < 7; ++j)
+        int max = i < 12 ? 7 : 6;
+        for (int j = 0; j < max; ++j)
         {
             int s = shuffle_helper[shuffle_ptr] % 4;
             int v = shuffle_helper[shuffle_ptr] / 4;
@@ -59,60 +59,76 @@ void deck_init()
                     deck[i].stack[j].suit = HEART;
                     break;
                 case 1:
-                    deck[i].stack[j].suit = DIAMOND;
+                    deck[i].stack[j].suit = CLUB;
                     break;
                 case 2:
-                    deck[i].stack[j].suit = SPADE;
+                    deck[i].stack[j].suit = DIAMOND;
                     break;
                 case 3:
-                    deck[i].stack[j].suit = CLUB;
+                    deck[i].stack[j].suit = SPADE;
                     break;
             }
         }
-        deck[i].ptr = 7;
-    }
-    for (int i = 12; i < 16; ++i)
-    {
-        for (int j = 0; j < 6; ++j)
-        {
-            int s = shuffle_helper[shuffle_ptr] % 4;
-            int v = shuffle_helper[shuffle_ptr] / 4;
-            ++shuffle_ptr;
-            deck[i].stack[j].val = v;
-            switch (s)
-            {
-                case 0:
-                    deck[i].stack[j].suit = HEART;
-                    break;
-                case 1:
-                    deck[i].stack[j].suit = DIAMOND;
-                    break;
-                case 2:
-                    deck[i].stack[j].suit = SPADE;
-                    break;
-                case 3:
-                    deck[i].stack[j].suit = CLUB;
-                    break;
-            }
-        }
-        deck[i].ptr = 6;
+        deck[i].ptr = max;
     }
 }
 void deck_move(int dest, int src, int num)
 {
-    for (int i = 0; i < num; ++i)
-        deck[dest].stack[deck[dest].ptr++] = deck[src].stack[deck[src].ptr - num + i];
-    deck[src].ptr -= num;
+    if (dest < 8)
+    {
+        deck[dest].stack[0] = deck[src].stack[deck[src].ptr - num];
+        deck[dest].ptr = 1;
+        --deck[src].ptr;
+    }
+    else 
+    {
+        for (int i = 0; i < num; ++i)
+            deck[dest].stack[deck[dest].ptr++] = deck[src].stack[deck[src].ptr - num + i];
+        deck[dest].ptr += num;
+        deck[src].ptr -= num;  
+    }
 }
-int deck_count_empty()
+int deck_empty_call()
 {
     int count  = 0;
-    for (int i = 4; i < 16; ++i)
+    for (int i = 4; i < 8; ++i)
         if (deck[i].ptr == 0)
             ++count;
     return count;
 }
-bool deck_is_movable(deck_card dest, deck_card src)
+int deck_empty_stack()
+{
+    int count  = 0;
+    for (int i = 8; i < 16; ++i)
+        if (deck[i].ptr == 0)
+            ++count;
+    return count;
+}
+int deck_max_move(int dest, int src)
+{
+    // TODO
+    return 100;
+}
+bool deck_is_homable(int dest, deck_card src)
+{
+    if (deck[dest].ptr != 0)
+        return deck[dest].stack[1].val == src.val - 1
+                && deck[dest].stack[1].suit == src.suit;
+    else 
+    {
+        if (src.val != 1)
+            return false;
+        switch (dest)
+        {
+            case 0: return src.suit == HEART;
+            case 1: return src.suit == CLUB;
+            case 2: return src.suit == DIAMOND;
+            case 3: return src.suit == SPADE;
+        }
+    }
+}
+inline
+bool deck_card_is_movable(deck_card dest, deck_card src)
 {
     if (dest.val != src.val + 1
         || ((dest.suit == SPADE || dest.suit == CLUB) && (src.suit == SPADE || src.suit == CLUB))
@@ -120,15 +136,17 @@ bool deck_is_movable(deck_card dest, deck_card src)
         return false;
     return true;
 }
-bool deck_is_continuous(int n, int num)
+bool deck_is_movable(int dest, int src, int num)
 {
-    for (int i = 1; i < num; ++i)
-    {
-        int position = deck[n].ptr - i;
-        if (deck_is_movable(deck[n].stack[position - 1], deck[n].stack[position])
-            return false;
-    }
-    return true;
+    if (dest < 4)
+        return deck_is_homable(dest, deck_peek(src, num));
+    if (dest < 8)
+        return deck[dest].ptr == 0 && num == 1;
+    int max = deck_max_move(dest, src);
+    if (deck[dest].ptr == 0)
+        return num <= max;
+    else 
+        return num <= max && deck_card_is_movable(deck_peek(dest, 1), deck_peek(src, num));
 }
 int deck_count_continuous(int n)
 {
@@ -138,15 +156,11 @@ int deck_count_continuous(int n)
         return max;
     for (int i = 2 i <= max; ++i)
     {
-        if (!deck_is_movable(deck[n].stack[max - i], deck[n].stack[max - i + 1]))
+        if (!deck_card_is_movable(deck[n].stack[max - i], deck[n].stack[max - i + 1]))
             return count;
         ++count;
     }
     return count;
-}
-struct deck_card deck_peek(int n, int num)
-{
-    return deck[n].stack[deck[n].ptr - num];
 }
 bool deck_is_winner()
 {
@@ -154,7 +168,12 @@ bool deck_is_winner()
         if (deck[n].ptr != 1)
             return false;
     for (int i = 0; i < 4; ++i)
-        if (deck_peek(i, 1) != 13)
+        if (deck_peek(i, 1).val != 13)
             return false;
     return true;
+}
+void deck_finish()
+{
+    for (int i = 0; i < 16; ++i)
+        free(deck[i].stack);
 }

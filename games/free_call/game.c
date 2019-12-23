@@ -61,8 +61,7 @@ void game_select(enum status *status, int *src, int *count, int *dest)
 void game_move(enum status *status, int *src, int *count, int *dest)
 {
     *status = SELECT;
-    if (*count > deck_count_empty() + 1
-        || !deck_is_movable(deck_peek(*dest, 1), deck_peek(*src, *count)))
+    if (!deck_is_movable())
         return;
     deck_move(*dest, *src, *count);
     show_stack(*dest, -1, 0);
@@ -79,6 +78,10 @@ void game_win()
     else if (c == 'n')
         *status = INIT;
     return;
+}
+void game_end()
+{
+    deck_finish();
 }
 int main()
 {
@@ -101,6 +104,7 @@ int main()
                 game_win();
         }  
     }
+    game_end();
     system("cls");
     printf(
         "\n"
